@@ -1,7 +1,10 @@
 %% Converts automagic output to EEGLAB .set format
 
-data_dir = 'C:\Users\LevittLab\Downloads\GradSchool_TD_EC-EO-raw-format-individual-files\EO_GSEO_results';
-out_dir = 'GradSchoolOutput';
+data_dir = 'C:\Users\LevittLab\Downloads\GradSchoolAutomagicOut\EO';
+out_dir = 'GradSchoolOutput/EO2';
+if ~exist(out_dir, 'dir')
+    mkdir(out_dir);
+end
 files = dir([data_dir, '/**', '/*p_*.mat']);
 eeglab;
 for k = 1:length(files)
@@ -15,7 +18,11 @@ for k = 1:length(files)
     EEG = load(fullfile(folder, name));
     EEG = EEG.EEG;
     EEG = eeg_checkset( EEG );
-    EEG = pop_reref( EEG, []);
+    EEG = pop_reref( EEG, []); % set average reference
+    EEG = eeg_checkset( EEG );
+    % create 2 second epochs
+    EEG = eeg_regepochs(EEG, 'recurrence', 2);
+    EEG.setname = name(1:end-4);
     EEG = eeg_checkset( EEG );
     EEG = pop_saveset(EEG, 'filename',sprintf('%s.set', name(1:end-4)),'filepath',out_dir,'savemode','onefile');
 end
